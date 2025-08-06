@@ -11,8 +11,8 @@ interface ButtonProps {
 }
 
 interface StyledButtonProps {
-  variant: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size: 'sm' | 'md' | 'lg';
+  $variant: 'primary' | 'secondary' | 'outline' | 'ghost';
+  $size: 'sm' | 'md' | 'lg';
 }
 
 const variantStyles = {
@@ -28,14 +28,31 @@ const variantStyles = {
     }
   `,
   secondary: css`
-    background-color: #6366f1;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     color: #ffffff;
     border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
     
     &:hover:not(:disabled) {
-      background-color: #4f46e5;
-      transform: translateY(-1px);
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+      
+      &::before {
+        left: 100%;
+      }
     }
   `,
   outline: css`
@@ -92,8 +109,8 @@ const StyledButton = styled.button<StyledButtonProps>`
   outline: none;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   
-  ${({ variant }) => variantStyles[variant]}
-  ${({ size }) => sizeStyles[size]}
+  ${({ $variant }) => variantStyles[$variant]}
+  ${({ $size }) => sizeStyles[$size]}
   
   &:disabled {
     opacity: 0.5;
@@ -115,8 +132,8 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <StyledButton
-      variant={variant}
-      size={size}
+      $variant={variant}
+      $size={size}
       onClick={onClick}
       type={type}
       disabled={disabled}
