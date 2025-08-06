@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const blink = keyframes`
@@ -107,6 +107,84 @@ const returnToNormalRight = keyframes`
   }
 `;
 
+// Warning sign animation
+const warningPulse = keyframes`
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+`;
+
+// Antenna warning light animation
+const antennaBlink = keyframes`
+  0%, 100% {
+    fill: #ff6b9d;
+  }
+  50% {
+    fill: #ffd700;
+  }
+`;
+
+// Success checkmark animation
+const successPulse = keyframes`
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+`;
+
+// Antenna success light animation
+const antennaSuccessBlink = keyframes`
+  0%, 100% {
+    fill: #ff6b9d;
+  }
+  50% {
+    fill: #00ff00;
+  }
+`;
+
+// Click animation for mascot
+const clickBounce = keyframes`
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-2deg);
+  }
+  50% {
+    transform: scale(0.95) rotate(2deg);
+  }
+  75% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+`;
+
+const clickSparkle = keyframes`
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(360deg);
+  }
+`;
+
 const MascotContainer = styled.div`
   position: absolute;
   top: -160px;
@@ -181,14 +259,7 @@ const Star5 = styled.circle`
   animation-delay: 1.2s;
 `;
 
-const PathLine = styled.path`
-  stroke: #ffffff;
-  stroke-width: 1;
-  stroke-dasharray: 3, 3;
-  fill: none;
-  animation: ${dash} 2s linear infinite;
-  opacity: 0.6;
-`;
+
 
 const LeftHand = styled.rect<{ $isCovering: boolean; $isPasswordVisible: boolean }>`
   animation: ${props => {
@@ -201,26 +272,76 @@ const LeftHand = styled.rect<{ $isCovering: boolean; $isPasswordVisible: boolean
 
 const RightHand = styled.rect<{ $isCovering: boolean; $isPasswordVisible: boolean }>`
   animation: ${props => {
-    if (props.$isPasswordVisible) return 'none'; // правая рука не двигается когда пароль видимый
+    if (props.$isPasswordVisible) return 'none'; // right hand doesn't move when password is visible
     if (props.$isCovering) return coverRightEye;
     return returnToNormalRight;
   }} 0.4s ease-in-out forwards;
   transform-origin: center;
 `;
 
+const WarningSign = styled.g<{ $showWarning: boolean }>`
+  animation: ${props => props.$showWarning ? warningPulse : 'none'} 1.5s ease-in-out infinite;
+  transform-origin: center;
+`;
+
+const BlinkingAntenna = styled.circle<{ $showWarning: boolean; $showSuccess: boolean }>`
+  animation: ${props => {
+    if (props.$showWarning) return antennaBlink;
+    if (props.$showSuccess) return antennaSuccessBlink;
+    return 'none';
+  }} 1s ease-in-out infinite;
+`;
+
+const SuccessSign = styled.g<{ $showSuccess: boolean }>`
+  animation: ${props => props.$showSuccess ? successPulse : 'none'} 1.5s ease-in-out infinite;
+  transform-origin: center;
+`;
+
+const ClickableMascot = styled.div<{ $isClicked: boolean }>`
+  cursor: pointer;
+  animation: ${props => props.$isClicked ? clickBounce : 'none'} 0.6s ease-in-out;
+  transform-origin: center;
+  user-select: none;
+  
+  &:hover {
+    filter: brightness(1.1);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const ClickSparkle = styled.circle<{ $isClicked: boolean }>`
+  animation: ${props => props.$isClicked ? clickSparkle : 'none'} 0.8s ease-in-out;
+  transform-origin: center;
+`;
+
 interface MascotProps {
   isVisible?: boolean;
-  isPasswordFocused?: boolean; // теперь означает "есть ли ввод в поле пароля"
-  isPasswordVisible?: boolean; // означает "видимый ли пароль"
+  isPasswordFocused?: boolean; // now means "is there input in password field"
+  isPasswordVisible?: boolean; // means "is password visible"
+  showWarning?: boolean; // means "show warning sign for wrong password"
+  showSuccess?: boolean; // means "show success checkmark for successful registration"
+  onMascotClick?: () => void; // callback for mascot click
 }
 
-export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswordFocused = false, isPasswordVisible = false }) => {
+export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswordFocused = false, isPasswordVisible = false, showWarning = false, showSuccess = false, onMascotClick }) => {
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleClick = useCallback(() => {
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 600); // Reset after animation
+    onMascotClick?.();
+  }, [onMascotClick]);
+
   if (!isVisible) return null;
 
   return (
     <MascotContainer>
-      <StyledSVG viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-        {/* Космические звезды */}
+      <ClickableMascot $isClicked={isClicked} onClick={handleClick}>
+        <StyledSVG viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        {/* Space stars */}
         <Star0 cx="15" cy="15" r="0.8" fill="#ffffff" />
         <Star1 cx="65" cy="20" r="0.6" fill="#ffffff" />
         <Star2 cx="70" cy="60" r="0.7" fill="#ffffff" />
@@ -266,16 +387,62 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
             <circle cx="47" cy="36.5" r="0.4" fill="#000000" />
           </Eyes>
           
+          {/* Предупреждающий знак над головой */}
+          {showWarning && (
+            <WarningSign $showWarning={showWarning}>
+              {/* Жёлтый треугольник */}
+              <polygon 
+                points="40,2 33,16 47,16" 
+                fill="#ffd700" 
+                stroke="#ff8c00" 
+                strokeWidth="1"
+              />
+              {/* Восклицательный знак */}
+              <circle cx="40" cy="10" r="1.5" fill="#ff8c00" />
+              <rect x="39.2" y="12" width="1.6" height="3" fill="#ff8c00" />
+            </WarningSign>
+          )}
+
+          {/* Зелёная галочка при успешной регистрации */}
+          {showSuccess && (
+            <SuccessSign $showSuccess={showSuccess}>
+              {/* Зелёный круг */}
+              <circle 
+                cx="40" 
+                cy="9" 
+                r="7" 
+                fill="#00ff88" 
+                stroke="#00cc66" 
+                strokeWidth="1"
+              />
+              {/* Галочка */}
+              <path 
+                d="M 36 9 L 39 12 L 44 7" 
+                stroke="#ffffff" 
+                strokeWidth="2" 
+                fill="none" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </SuccessSign>
+          )}
+          
           {/* Розовые щечки */}
           <circle cx="29" cy="41" r="2" fill="#ffb3d9" opacity="0.8" />
           <circle cx="51" cy="41" r="2" fill="#ffb3d9" opacity="0.8" />
           
           {/* Милая улыбка */}
-          <path d="M 33 43 Q 40 47 47 43" stroke="#000000" strokeWidth="2" fill="none" strokeLinecap="round" />
+          <path 
+            d="M 33 43 Q 40 47 47 43" 
+            stroke="#000000" 
+            strokeWidth="2" 
+            fill="none" 
+            strokeLinecap="round"
+          />
           
           {/* Антенна с мигающим светом */}
           <line x1="40" y1="30" x2="40" y2="20" stroke="#ffffff" strokeWidth="2" />
-          <circle cx="40" cy="19" r="2" fill="#ff6b9d" />
+          <BlinkingAntenna cx="40" cy="19" r="2" fill="#ff6b9d" $showWarning={showWarning} $showSuccess={showSuccess} />
           <Sparkle0 cx="40" cy="19" r="0.8" fill="#ffffff" />
           <SparkleDelay cx="40" cy="19" r="0.5" fill="#ffb3d9" />
           
@@ -329,8 +496,20 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
           <circle cx="68" cy="55" r="0.4" fill="#87ceeb" opacity="0.7" />
           <circle cx="25" cy="15" r="0.5" fill="#87ceeb" opacity="0.7" />
           <circle cx="55" cy="75" r="0.7" fill="#87ceeb" opacity="0.7" />
+          
+          {/* Искры при клике */}
+          {isClicked && (
+            <>
+              <ClickSparkle cx="40" cy="20" r="3" fill="#ffd700" $isClicked={isClicked} />
+              <ClickSparkle cx="35" cy="25" r="2" fill="#ff6b9d" $isClicked={isClicked} />
+              <ClickSparkle cx="45" cy="25" r="2.5" fill="#87ceeb" $isClicked={isClicked} />
+              <ClickSparkle cx="30" cy="30" r="2" fill="#ffd700" $isClicked={isClicked} />
+              <ClickSparkle cx="50" cy="30" r="2" fill="#ff6b9d" $isClicked={isClicked} />
+            </>
+          )}
         </g>
-      </StyledSVG>
+        </StyledSVG>
+      </ClickableMascot>
     </MascotContainer>
   );
 }); 

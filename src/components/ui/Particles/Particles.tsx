@@ -21,6 +21,37 @@ const slowTwinkle = keyframes`
   }
 `;
 
+// Star flight animation towards the user
+const starflight = keyframes`
+  0% {
+    transform: translateZ(0) scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateZ(-1000px) scale(3);
+    opacity: 0;
+  }
+`;
+
+// Bright star flight animation with shaking effect
+const starflightBright = keyframes`
+  0% {
+    transform: translateZ(0) scale(1) translateX(0) translateY(0);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  50% {
+    transform: translateZ(-500px) scale(2) translateX(5px) translateY(-3px);
+    opacity: 0.8;
+    filter: blur(1px);
+  }
+  100% {
+    transform: translateZ(-1000px) scale(4) translateX(-2px) translateY(2px);
+    opacity: 0;
+    filter: blur(2px);
+  }
+`;
+
 const SpaceContainer = styled.div`
   position: absolute;
   top: 0;
@@ -39,6 +70,7 @@ const Star = styled.div.attrs<{
   $top: number;
   $delay: number;
   $isBright?: boolean;
+  $isFlying?: boolean;
 }>((props) => ({
   style: {
     width: `${props.$size}px`,
@@ -46,30 +78,44 @@ const Star = styled.div.attrs<{
     left: `${props.$left}%`,
     top: `${props.$top}%`,
     animationDelay: `${props.$delay}s`,
-    animationDuration: `${2 + Math.random() * 3}s`,
+    animationDuration: props.$isFlying 
+      ? `${1 + Math.random() * 2}s` 
+      : `${2 + Math.random() * 3}s`,
   }
 }))`
   position: absolute;
   background: #ffffff;
   border-radius: 50%;
-  animation: ${props => props.$isBright ? twinkle : slowTwinkle} ease-in-out infinite;
+  animation: ${props => {
+    if (props.$isFlying) {
+      return props.$isBright ? starflightBright : starflight;
+    }
+    return props.$isBright ? twinkle : slowTwinkle;
+  }} ${props => props.$isFlying ? 'linear' : 'ease-in-out'} infinite;
+  animation-fill-mode: forwards;
   box-shadow: ${props => props.$isBright 
     ? '0 0 6px rgba(255, 255, 255, 0.8), 0 0 12px rgba(255, 255, 255, 0.4)' 
     : '0 0 2px rgba(255, 255, 255, 0.3)'
   };
+  perspective: 1000px;
+  transform-style: preserve-3d;
 `;
 
-export const SpaceBackground: React.FC = () => {
-  // Генерируем звезды разных размеров и яркости
+interface SpaceBackgroundProps {
+  isFlying?: boolean;
+}
+
+export const SpaceBackground: React.FC<SpaceBackgroundProps> = ({ isFlying = false }) => {
+  // Generate stars with different sizes and brightness
   const stars = React.useMemo(() => 
-    Array.from({ length: 100 }, (_, i) => ({
+    Array.from({ length: isFlying ? 150 : 100 }, (_, i) => ({
       id: i,
-      size: Math.random() * 3 + 1,
+      size: isFlying ? Math.random() * 4 + 1 : Math.random() * 3 + 1,
       left: Math.random() * 100,
       top: Math.random() * 100,
-      delay: Math.random() * 5,
-      isBright: Math.random() > 0.7 // 30% звезд будут яркими
-    })), []
+      delay: isFlying ? Math.random() * 2 : Math.random() * 5,
+      isBright: Math.random() > (isFlying ? 0.5 : 0.7) // More bright stars in flight mode
+    })), [isFlying]
   );
 
   return (
@@ -82,6 +128,7 @@ export const SpaceBackground: React.FC = () => {
           $top={star.top}
           $delay={star.delay}
           $isBright={star.isBright}
+          $isFlying={isFlying}
         />
       ))}
     </SpaceContainer>

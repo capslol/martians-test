@@ -10,8 +10,9 @@ interface AuthFormData {
 }
 
 interface AuthFormProps {
-  onLogin: (data: { email: string; password: string }) => void;
-  onRegister: (data: { email: string; password: string; confirmPassword?: string }) => void;
+  onLogin: (data: { email: string; password: string }) => Promise<boolean>;
+  onRegister: (data: { email: string; password: string; confirmPassword?: string }) => Promise<boolean>;
+  isFlying?: boolean;
 }
 
 const Container = styled.div`
@@ -25,11 +26,15 @@ const Container = styled.div`
   overflow: hidden;
 `;
 
-const FormContainer = styled.div`
+const FormContainer = styled.div<{ $isFlying?: boolean }>`
   width: 100%;
   max-width: 400px;
   position: relative;
   z-index: 10;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  opacity: ${props => props.$isFlying ? 0 : 1};
+  transform: ${props => props.$isFlying ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'};
+  pointer-events: ${props => props.$isFlying ? 'none' : 'auto'};
 `;
 
 const Title = styled.h1`
@@ -57,28 +62,84 @@ const ToggleSection = styled.div`
   text-align: center;
 `;
 
-export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister }) => {
+const FlightMessage = styled.div<{ $isVisible: boolean }>`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  z-index: 20;
+  opacity: ${props => props.$isVisible ? 1 : 0};
+  transition: opacity 0.5s ease-in-out;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  @keyframes pulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+  
+  ${props => props.$isVisible && `
+    animation: pulse 2s ease-in-out infinite;
+  `}
+`;
+
+export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlying = false }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>();
+
+  const handleMascotClick = useCallback(() => {
+    // Fun interaction when mascot is clicked
+    console.log('🤖 Mascot was clicked! Hello there!');
+  }, []);
 
   const handleToggle = useCallback(() => {
     setIsLogin(!isLogin);
     setPassword('');
     setConfirmPassword('');
     setIsPasswordVisible(false);
+    setShowWarning(false);
+    setShowSuccess(false);
     reset();
   }, [isLogin, reset]);
 
   const handleFormSubmit = useCallback((data: AuthFormData) => {
     if (isLogin) {
-      onLogin(data);
+      // Show warning animation when login fails
+      const handleLoginWithWarning = async () => {
+        const success = await onLogin(data);
+        if (!success) {
+          setShowWarning(true);
+          setTimeout(() => setShowWarning(false), 3000); // Reset after 3 seconds
+        }
+      };
+      handleLoginWithWarning();
     } else {
-      onRegister(data);
+      // Show success animation when registration succeeds and switch to login
+      const handleRegisterWithSuccess = async () => {
+        const success = await onRegister(data);
+        if (success) {
+          setShowSuccess(true);
+          setTimeout(() => {
+            setShowSuccess(false);
+            setIsLogin(true); // Switch to login form
+            reset(); // Clear form
+            setPassword('');
+            setConfirmPassword('');
+          }, 2000); // Show success for 2 seconds
+        }
+      };
+      handleRegisterWithSuccess();
     }
-  }, [isLogin, onLogin, onRegister]);
+  }, [isLogin, onLogin, onRegister, reset]);
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -88,9 +149,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister }) => {
     setConfirmPassword(e.target.value);
   }, []);
 
-  // Робот закрывает глаза если в любом из полей пароля что-то введено
+  // Robot closes eyes if any password field has input
   const hasPasswordInput = password.length > 0 || confirmPassword.length > 0;
-  // Робот закрывает один глаз если пароль видимый
+  // Robot closes one eye if password is visible
   const isPasswordVisibleState = isPasswordVisible;
 
   const title = isLogin ? 'Welcome Back' : 'Join Us';
@@ -98,14 +159,23 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister }) => {
 
   return (
     <Container>
-      <SpaceBackground />
+      <SpaceBackground isFlying={isFlying} />
       
-      <FormContainer>
+      {isFlying && (
+        <FlightMessage $isVisible={isFlying}>
+          🚀 Welcome to Space! 🚀
+        </FlightMessage>
+      )}
+      
+      <FormContainer $isFlying={isFlying}>
         <Card variant="glass">
           <Mascot 
             isVisible={true} 
             isPasswordFocused={hasPasswordInput} 
             isPasswordVisible={isPasswordVisibleState}
+            showWarning={showWarning}
+            showSuccess={showSuccess}
+            onMascotClick={handleMascotClick}
           />
           <Title>{title}</Title>
           
