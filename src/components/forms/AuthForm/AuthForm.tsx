@@ -12,7 +12,6 @@ interface AuthFormData {
 interface AuthFormProps {
   onLogin: (data: { email: string; password: string }) => Promise<boolean>;
   onRegister: (data: { email: string; password: string; confirmPassword?: string }) => Promise<boolean>;
-  isFlying?: boolean;
   errorMessage?: string;
 }
 
@@ -27,15 +26,11 @@ const Container = styled.div`
   overflow: visible;
 `;
 
-const FormContainer = styled.div<{ $isFlying?: boolean }>`
+const FormContainer = styled.div`
   width: 100%;
   max-width: 400px;
   position: relative;
   z-index: 10;
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  opacity: ${props => props.$isFlying ? 0 : 1};
-  transform: ${props => props.$isFlying ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'};
-  pointer-events: ${props => props.$isFlying ? 'none' : 'auto'};
   overflow: visible;
 `;
 
@@ -64,32 +59,7 @@ const ToggleSection = styled.div`
   text-align: center;
 `;
 
-const FlightMessage = styled.div<{ $isVisible: boolean }>`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #ffffff;
-  font-size: 2rem;
-  font-weight: bold;
-  text-align: center;
-  z-index: 20;
-  opacity: ${props => props.$isVisible ? 1 : 0};
-  transition: opacity 0.5s ease-in-out;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 1; }
-  }
-  
-  ${props => props.$isVisible && `
-    animation: pulse 2s ease-in-out infinite;
-  `}
-`;
-
-export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlying = false, errorMessage = '' }) => {
+export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, errorMessage = '' }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -161,15 +131,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlyin
 
   return (
     <Container>
-      <SpaceBackground isFlying={isFlying} />
+      <SpaceBackground />
       
-      {isFlying && (
-        <FlightMessage $isVisible={isFlying}>
-          🚀 Welcome to Space! 🚀
-        </FlightMessage>
-      )}
-      
-      <FormContainer $isFlying={isFlying}>
+      <FormContainer>
         <Card variant="glass">
           <Mascot 
             isVisible={true} 

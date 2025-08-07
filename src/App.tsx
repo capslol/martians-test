@@ -3,13 +3,18 @@ import { Dashboard, Auth } from './pages';
 import { GlobalStyles } from './App.styles';
 import { Analytics } from "@vercel/analytics/react"
 import { useAuth } from './hooks';
+import { SpaceBackground } from './components/ui';
 
 // Компонент для защищенных маршрутов
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div>Загрузка...</div>; // Можно заменить на красивый лоадер
+    return (
+      <div style={{ minHeight: '100vh', background: '#000000' }}>
+        <SpaceBackground />
+      </div>
+    );
   }
   
   if (!isAuthenticated) {
@@ -24,7 +29,11 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
   
   if (loading) {
-    return <div>Загрузка...</div>; // Можно заменить на красивый лоадер
+    return (
+      <div style={{ minHeight: '100vh', background: '#000000' }}>
+        <SpaceBackground />
+      </div>
+    );
   }
   
   if (isAuthenticated) {

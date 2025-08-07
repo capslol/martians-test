@@ -16,7 +16,6 @@ interface RegisterData {
 
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
-  const [isFlying, setIsFlying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const { signIn, signUp } = useAuth();
 
@@ -24,16 +23,9 @@ export const Auth: React.FC = () => {
     const result = await signIn(data.email, data.password);
     
     if (result.success) {
-      // Launch space flight animation
-      console.log('Login successful! Launching space flight animation...');
-      setIsFlying(true);
-      
-      // После анимации переход на дашборд
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 5000); // 5 секунд анимации полета
+      console.log('Login successful! Redirecting to dashboard...');
+      navigate('/dashboard');
     } else {
-      // Login error, show sad animation
       console.error('Login error:', result.error);
       setErrorMessage(result.error || 'Login failed');
       // Clear error after 3 seconds
@@ -47,10 +39,8 @@ export const Auth: React.FC = () => {
     const result = await signUp(data.email, data.password);
     
     if (result.success) {
-      // Registration successful
       console.log('Registration successful!');
     } else {
-      // Registration error
       console.error('Registration error:', result.error);
       setErrorMessage(result.error || 'Registration failed');
       // Clear error after 3 seconds
@@ -64,7 +54,6 @@ export const Auth: React.FC = () => {
     <AuthForm 
       onLogin={handleLogin}
       onRegister={handleRegister}
-      isFlying={isFlying}
       errorMessage={errorMessage}
     />
   );
