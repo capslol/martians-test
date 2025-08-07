@@ -47,6 +47,7 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-height: 320px; /* Фиксированная минимальная высота */
 `;
 
 const FormField = styled.div`
@@ -54,8 +55,31 @@ const FormField = styled.div`
   flex-direction: column;
 `;
 
+const FormFieldsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1; /* Занимает доступное пространство */
+`;
+
+const ConfirmPasswordField = styled.div<{ $isVisible: boolean }>`
+  display: flex;
+  flex-direction: column;
+  max-height: ${props => props.$isVisible ? '100px' : '0'};
+  opacity: ${props => props.$isVisible ? 1 : 0};
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  margin-top: ${props => props.$isVisible ? '1.5rem' : '0'};
+`;
+
+const ButtonContainer = styled.div`
+  margin-top: auto; /* Прижимает к низу */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
 const ToggleSection = styled.div`
-  margin-top: 1rem;
   text-align: center;
 `;
 
@@ -147,38 +171,38 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, errorMe
           <Title>{title}</Title>
           
           <Form onSubmit={handleSubmit(handleFormSubmit)}>
-            <FormField>
-              <Input
-                id="email"
-                label="Email"
-                type="email"
-                placeholder="Enter your email"
-                {...register('email', { required: 'Email is required' })}
-                error={errors.email?.message}
-                required
-              />
-            </FormField>
-            
-            <FormField>
-              <Input
-                id="password"
-                label="Password"
-                type={isPasswordVisible ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: { value: 6, message: 'Password must be at least 6 characters' },
-                  onChange: handlePasswordChange
-                })}
-                error={errors.password?.message}
-                required
-                onPasswordVisibilityChange={setIsPasswordVisible}
-              />
-            </FormField>
-
-            {!isLogin && (
+            <FormFieldsContainer>
               <FormField>
+                <Input
+                  id="email"
+                  label="Email"
+                  type="email"
+                  placeholder="Enter your email"
+                  {...register('email', { required: 'Email is required' })}
+                  error={errors.email?.message}
+                  required
+                />
+              </FormField>
+              
+              <FormField>
+                <Input
+                  id="password"
+                  label="Password"
+                  type={isPasswordVisible ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  value={password}
+                  {...register('password', { 
+                    required: 'Password is required',
+                    minLength: { value: 6, message: 'Password must be at least 6 characters' },
+                    onChange: handlePasswordChange
+                  })}
+                  error={errors.password?.message}
+                  required
+                  onPasswordVisibilityChange={setIsPasswordVisible}
+                />
+              </FormField>
+
+              <ConfirmPasswordField $isVisible={!isLogin}>
                 <Input
                   id="confirmPassword"
                   label="Confirm Password"
@@ -186,24 +210,26 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, errorMe
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   {...register('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: value => value === password || 'Passwords do not match',
+                    required: !isLogin ? 'Please confirm your password' : false,
+                    validate: value => !isLogin ? (value === password || 'Passwords do not match') : true,
                     onChange: handleConfirmPasswordChange
                   })}
                   error={errors.confirmPassword?.message}
-                  required
+                  required={!isLogin}
                   hidePasswordToggle={true}
                 />
-              </FormField>
-            )}
+              </ConfirmPasswordField>
+            </FormFieldsContainer>
 
-            <Button type="submit" size="lg">
-              {buttonText}
-            </Button>
-            
-            <ToggleSection>
-              <SpaceToggle isLogin={isLogin} onToggle={handleToggle} />
-            </ToggleSection>
+            <ButtonContainer>
+              <Button type="submit" size="lg">
+                {buttonText}
+              </Button>
+              
+              <ToggleSection>
+                <SpaceToggle isLogin={isLogin} onToggle={handleToggle} />
+              </ToggleSection>
+            </ButtonContainer>
           </Form>
         </Card>
       </FormContainer>
