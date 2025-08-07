@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthForm } from '../../components/forms';
-import { loginUser, registerUser } from '../../services';
+import { useAuth } from '../../hooks';
 
 interface LoginData {
   email: string;
@@ -17,36 +17,40 @@ interface RegisterData {
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
   const [isFlying, setIsFlying] = useState(false);
+  const { signIn, signUp } = useAuth();
 
   const handleLogin = async (data: LoginData): Promise<boolean> => {
-    const success = await loginUser(data.email, data.password);
+    const result = await signIn(data.email, data.password);
     
-    if (success) {
-      // Start space flight animation instead of redirect
-      console.log('Login successful! Starting space flight animation...');
+    if (result.success) {
+      // Запуск анимации полета в космос
+      console.log('Вход выполнен успешно! Запуск анимации полета в космос...');
       setIsFlying(true);
       
-      // After some time redirect to dashboard
+      // После анимации переход на дашборд
       setTimeout(() => {
         navigate('/dashboard');
-      }, 5000); // 5 seconds of flight animation
+      }, 5000); // 5 секунд анимации полета
     } else {
-      // No alert, just return false for sad animation
+      // Ошибка входа, показываем грустную анимацию
+      console.error('Ошибка входа:', result.error);
     }
     
-    return success;
+    return result.success;
   };
 
   const handleRegister = async (data: RegisterData): Promise<boolean> => {
-    const success = await registerUser(data.email, data.password);
+    const result = await signUp(data.email, data.password);
     
-    if (success) {
-      // Registration successful, no alert needed
+    if (result.success) {
+      // Регистрация успешна
+      console.log('Регистрация прошла успешно!');
     } else {
-      // User already exists, no alert needed
+      // Ошибка регистрации
+      console.error('Ошибка регистрации:', result.error);
     }
     
-    return success;
+    return result.success;
   };
 
   return (

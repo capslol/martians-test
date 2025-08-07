@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Button, SpaceBackground } from '../../components/ui';
+import { useAuth } from '../../hooks';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -37,9 +38,24 @@ const Subtitle = styled.p`
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 `;
 
+const UserInfo = styled.div`
+  margin-bottom: 2rem;
+  color: #a0aec0;
+  font-size: 1rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+`;
+
 export const Dashboard: React.FC = () => {
-  const handleLogout = () => {
-    window.location.href = '/auth';
+  const { signOut, user } = useAuth();
+
+  const handleLogout = async () => {
+    const result = await signOut();
+    if (result.success) {
+      console.log('Выход выполнен успешно');
+      // Перенаправление произойдет автоматически через защищенные маршруты
+    } else {
+      console.error('Ошибка выхода:', result.error);
+    }
   };
 
   return (
@@ -48,6 +64,11 @@ export const Dashboard: React.FC = () => {
       <Content>
         <Title>Mission Control</Title>
         <Subtitle>🚀 You've successfully entered the space station! 🌌</Subtitle>
+        {user && (
+          <UserInfo>
+            Космонавт: {user.email}
+          </UserInfo>
+        )}
         <Button onClick={handleLogout} variant="outline">
           Return to Earth
         </Button>
