@@ -7,9 +7,9 @@ export interface AuthResponse {
   error?: string;
 }
 
-// Сервис для аутентификации с Supabase
+// Authentication service with Supabase
 export const authService = {
-  // Регистрация нового пользователя
+  // Register new user
   async signUp(email: string, password: string): Promise<AuthResponse> {
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -21,7 +21,7 @@ export const authService = {
         console.error('Registration error:', error)
         return { 
           success: false, 
-          error: error.message || 'Ошибка регистрации' 
+          error: error.message || 'Registration error' 
         }
       }
 
@@ -33,12 +33,12 @@ export const authService = {
       console.error('Registration error:', error)
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Неизвестная ошибка' 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       }
     }
   },
 
-  // Вход в систему
+  // Sign in user
   async signIn(email: string, password: string): Promise<AuthResponse> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -50,7 +50,7 @@ export const authService = {
         console.error('Login error:', error)
         return { 
           success: false, 
-          error: error.message || 'Ошибка входа' 
+          error: error.message || 'Login error' 
         }
       }
 
@@ -62,12 +62,12 @@ export const authService = {
       console.error('Login error:', error)
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Неизвестная ошибка' 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       }
     }
   },
 
-  // Выход из системы
+  // Sign out user
   async signOut(): Promise<AuthResponse> {
     try {
       const { error } = await supabase.auth.signOut()
@@ -76,7 +76,7 @@ export const authService = {
         console.error('Logout error:', error)
         return { 
           success: false, 
-          error: error.message || 'Ошибка выхода' 
+          error: error.message || 'Sign out error' 
         }
       }
 
@@ -85,7 +85,7 @@ export const authService = {
       console.error('Logout error:', error)
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Неизвестная ошибка' 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       }
     }
   },

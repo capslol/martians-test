@@ -13,6 +13,7 @@ interface AuthFormProps {
   onLogin: (data: { email: string; password: string }) => Promise<boolean>;
   onRegister: (data: { email: string; password: string; confirmPassword?: string }) => Promise<boolean>;
   isFlying?: boolean;
+  errorMessage?: string;
 }
 
 const Container = styled.div`
@@ -23,7 +24,7 @@ const Container = styled.div`
   background: #000000;
   padding: 1rem;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 `;
 
 const FormContainer = styled.div<{ $isFlying?: boolean }>`
@@ -35,6 +36,7 @@ const FormContainer = styled.div<{ $isFlying?: boolean }>`
   opacity: ${props => props.$isFlying ? 0 : 1};
   transform: ${props => props.$isFlying ? 'scale(0.8) translateY(20px)' : 'scale(1) translateY(0)'};
   pointer-events: ${props => props.$isFlying ? 'none' : 'auto'};
+  overflow: visible;
 `;
 
 const Title = styled.h1`
@@ -87,7 +89,7 @@ const FlightMessage = styled.div<{ $isVisible: boolean }>`
   `}
 `;
 
-export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlying = false }) => {
+export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlying = false, errorMessage = '' }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -176,6 +178,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onRegister, isFlyin
             showWarning={showWarning}
             showSuccess={showSuccess}
             onMascotClick={handleMascotClick}
+            errorMessage={errorMessage}
           />
           <Title>{title}</Title>
           

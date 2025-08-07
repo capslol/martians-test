@@ -17,14 +17,15 @@ interface RegisterData {
 export const Auth: React.FC = () => {
   const navigate = useNavigate();
   const [isFlying, setIsFlying] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const { signIn, signUp } = useAuth();
 
   const handleLogin = async (data: LoginData): Promise<boolean> => {
     const result = await signIn(data.email, data.password);
     
     if (result.success) {
-      // Запуск анимации полета в космос
-      console.log('Вход выполнен успешно! Запуск анимации полета в космос...');
+      // Launch space flight animation
+      console.log('Login successful! Launching space flight animation...');
       setIsFlying(true);
       
       // После анимации переход на дашборд
@@ -32,8 +33,11 @@ export const Auth: React.FC = () => {
         navigate('/dashboard');
       }, 5000); // 5 секунд анимации полета
     } else {
-      // Ошибка входа, показываем грустную анимацию
-      console.error('Ошибка входа:', result.error);
+      // Login error, show sad animation
+      console.error('Login error:', result.error);
+      setErrorMessage(result.error || 'Login failed');
+      // Clear error after 3 seconds
+      setTimeout(() => setErrorMessage(''), 3000);
     }
     
     return result.success;
@@ -43,11 +47,14 @@ export const Auth: React.FC = () => {
     const result = await signUp(data.email, data.password);
     
     if (result.success) {
-      // Регистрация успешна
-      console.log('Регистрация прошла успешно!');
+      // Registration successful
+      console.log('Registration successful!');
     } else {
-      // Ошибка регистрации
-      console.error('Ошибка регистрации:', result.error);
+      // Registration error
+      console.error('Registration error:', result.error);
+      setErrorMessage(result.error || 'Registration failed');
+      // Clear error after 3 seconds
+      setTimeout(() => setErrorMessage(''), 3000);
     }
     
     return result.success;
@@ -58,6 +65,7 @@ export const Auth: React.FC = () => {
       onLogin={handleLogin}
       onRegister={handleRegister}
       isFlying={isFlying}
+      errorMessage={errorMessage}
     />
   );
 }; 

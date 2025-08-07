@@ -51,10 +51,10 @@ export const Dashboard: React.FC = () => {
   const handleLogout = async () => {
     const result = await signOut();
     if (result.success) {
-      console.log('Выход выполнен успешно');
-      // Перенаправление произойдет автоматически через защищенные маршруты
+      console.log('Sign out successful');
+      // Redirect will happen automatically through protected routes
     } else {
-      console.error('Ошибка выхода:', result.error);
+      console.error('Sign out error:', result.error);
     }
   };
 
@@ -66,7 +66,7 @@ export const Dashboard: React.FC = () => {
         <Subtitle>🚀 You've successfully entered the space station! 🌌</Subtitle>
         {user && (
           <UserInfo>
-            Космонавт: {user.email}
+            Astronaut: {user.email}
           </UserInfo>
         )}
         <Button onClick={handleLogout} variant="outline">

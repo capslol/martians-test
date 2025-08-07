@@ -174,12 +174,37 @@ const clickSparkle = keyframes`
   }
 `;
 
+// Toast animation
+const toastSlideIn = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+`;
+
+const toastSlideOut = keyframes`
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.8);
+  }
+`;
+
 const MascotContainer = styled.div`
   position: absolute;
   top: -160px;
   right: 30px;
   z-index: 10;
   animation: ${fly} 4s ease-in-out infinite;
+  overflow: visible;
+  width: 140px;
 `;
 
 const StyledSVG = styled.svg`
@@ -306,6 +331,52 @@ const ClickSparkle = styled.circle<{ $isClicked: boolean }>`
   transform-origin: center;
 `;
 
+// Error toast container
+const ToastContainer = styled.div<{ $isVisible: boolean }>`
+  position: absolute;
+  top: -55px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  animation: ${props => props.$isVisible ? toastSlideIn : toastSlideOut} 0.3s ease-out;
+  opacity: ${props => props.$isVisible ? 1 : 0};
+  pointer-events: none;
+  width: max-content;
+  max-width: 200px;
+`;
+
+const Toast = styled.div`
+  background: linear-gradient(135deg, #ff4757, #ff3742);
+  color: white;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 160px;
+  min-width: 100px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(255, 71, 87, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.3;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #ff3742;
+  }
+`;
+
 interface MascotProps {
   isVisible?: boolean;
   isPasswordFocused?: boolean; // now means "is there input in password field"
@@ -313,9 +384,10 @@ interface MascotProps {
   showWarning?: boolean; // means "show warning sign for wrong password"
   showSuccess?: boolean; // means "show success checkmark for successful registration"
   onMascotClick?: () => void; // callback for mascot click
+  errorMessage?: string; // error message to show in toast
 }
 
-export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswordFocused = false, isPasswordVisible = false, showWarning = false, showSuccess = false, onMascotClick }) => {
+export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswordFocused = false, isPasswordVisible = false, showWarning = false, showSuccess = false, onMascotClick, errorMessage = '' }) => {
   const [isClicked, setIsClicked] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -328,6 +400,13 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
 
   return (
     <MascotContainer>
+      {/* Error toast */}
+      {errorMessage && (
+        <ToastContainer $isVisible={!!errorMessage}>
+          <Toast>{errorMessage}</Toast>
+        </ToastContainer>
+      )}
+      
       <ClickableMascot $isClicked={isClicked} onClick={handleClick}>
         <StyledSVG viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
         {/* Space stars */}
@@ -338,9 +417,9 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
         <Star4 cx="45" cy="10" r="0.9" fill="#ffffff" />
         <Star5 cx="75" cy="40" r="0.4" fill="#ffffff" />
         
-        {/* Маскот - космический робот */}
+        {/* Mascot - space robot */}
         <g>
-          {/* Тело с градиентом */}
+          {/* Body with gradient */}
           <defs>
             <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" />
@@ -357,16 +436,16 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
 
           </defs>
           
-          {/* Свечение вокруг маскота */}
+          {/* Glow around mascot */}
           <circle cx="40" cy="40" r="35" fill="url(#glowGradient)" />
           
-          {/* Тело */}
+          {/* Body */}
           <rect x="30" y="45" width="20" height="25" rx="4" fill="url(#bodyGradient)" stroke="#000000" strokeWidth="0.8" />
           
-          {/* Голова */}
+          {/* Head */}
           <rect x="27" y="30" width="26" height="20" rx="6" fill="url(#headGradient)" stroke="#000000" strokeWidth="0.8" />
           
-          {/* Глаза с морганием */}
+          {/* Eyes with blinking */}
           <Eyes>
             <circle cx="33" cy="38" r="3" fill="#000000" />
             <circle cx="47" cy="38" r="3" fill="#000000" />
@@ -376,26 +455,26 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
             <circle cx="47" cy="36.5" r="0.4" fill="#000000" />
           </Eyes>
           
-          {/* Предупреждающий знак над головой */}
+          {/* Warning sign above head */}
           {showWarning && (
             <WarningSign $showWarning={showWarning}>
-              {/* Жёлтый треугольник */}
+              {/* Yellow triangle */}
               <polygon 
                 points="40,2 33,16 47,16" 
                 fill="#ffd700" 
                 stroke="#ff8c00" 
                 strokeWidth="1"
               />
-              {/* Восклицательный знак */}
+              {/* Exclamation mark */}
               <circle cx="40" cy="10" r="1.5" fill="#ff8c00" />
               <rect x="39.2" y="12" width="1.6" height="3" fill="#ff8c00" />
             </WarningSign>
           )}
 
-          {/* Зелёная галочка при успешной регистрации */}
+          {/* Green checkmark for successful registration */}
           {showSuccess && (
             <SuccessSign $showSuccess={showSuccess}>
-              {/* Зелёный круг */}
+              {/* Green circle */}
               <circle 
                 cx="40" 
                 cy="9" 
@@ -404,7 +483,7 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
                 stroke="#00cc66" 
                 strokeWidth="1"
               />
-              {/* Галочка */}
+              {/* Checkmark */}
               <path 
                 d="M 36 9 L 39 12 L 44 7" 
                 stroke="#ffffff" 
@@ -416,11 +495,11 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
             </SuccessSign>
           )}
           
-          {/* Розовые щечки */}
+          {/* Pink cheeks */}
           <circle cx="29" cy="41" r="2" fill="#ffb3d9" opacity="0.8" />
           <circle cx="51" cy="41" r="2" fill="#ffb3d9" opacity="0.8" />
           
-          {/* Милая улыбка */}
+          {/* Cute smile */}
           <path 
             d="M 33 43 Q 40 47 47 43" 
             stroke="#000000" 
@@ -429,13 +508,13 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
             strokeLinecap="round"
           />
           
-          {/* Антенна с мигающим светом */}
+          {/* Antenna with blinking light */}
           <line x1="40" y1="30" x2="40" y2="20" stroke="#ffffff" strokeWidth="2" />
           <BlinkingAntenna cx="40" cy="19" r="2" fill="#ff6b9d" $showWarning={showWarning} $showSuccess={showSuccess} />
           <Sparkle0 cx="40" cy="19" r="0.8" fill="#ffffff" />
           <SparkleDelay cx="40" cy="19" r="0.5" fill="#ffb3d9" />
           
-          {/* Руки - теперь с анимацией закрытия глаз */}
+          {/* Hands - now with eye covering animation */}
           <LeftHand 
             x="22" 
             y="50" 
@@ -461,32 +540,32 @@ export const Mascot: React.FC<MascotProps> = memo(({ isVisible = true, isPasswor
             $isPasswordVisible={isPasswordVisible}
           />
           
-          {/* Ноги */}
+          {/* Legs */}
           <rect x="32" y="70" width="5" height="10" rx="2.5" fill="url(#bodyGradient)" stroke="#000000" strokeWidth="0.8" />
           <rect x="43" y="70" width="5" height="10" rx="2.5" fill="url(#bodyGradient)" stroke="#000000" strokeWidth="0.8" />
           
-          {/* Детали на теле */}
+          {/* Body details */}
           <rect x="33" y="52" width="14" height="2.5" rx="1.25" fill="#4a90e2" opacity="0.7" />
           <rect x="33" y="56" width="10" height="2.5" rx="1.25" fill="#4a90e2" opacity="0.7" />
           <rect x="33" y="60" width="8" height="2.5" rx="1.25" fill="#4a90e2" opacity="0.7" />
           
-          {/* Милые сердечки */}
+          {/* Cute hearts */}
           <path d="M 25 35 Q 25 32 28 32 Q 31 32 31 35 Q 31 38 28 38 Q 25 38 25 35" fill="#ff6b9d" opacity="0.8" />
           <path d="M 49 35 Q 49 32 52 32 Q 55 32 55 35 Q 55 38 52 38 Q 49 38 49 35" fill="#ff6b9d" opacity="0.8" />
           
-          {/* Блестки вокруг */}
+          {/* Sparkles around */}
           <Sparkle0 cx="15" cy="25" r="1.2" fill="#ffd700" />
           <Sparkle1 cx="65" cy="30" r="1" fill="#ffd700" />
           <Sparkle2 cx="20" cy="65" r="1.1" fill="#ffd700" />
           <Sparkle3 cx="60" cy="70" r="0.8" fill="#ffd700" />
           
-          {/* Космические частицы */}
+          {/* Space particles */}
           <circle cx="12" cy="45" r="0.6" fill="#87ceeb" opacity="0.7" />
           <circle cx="68" cy="55" r="0.4" fill="#87ceeb" opacity="0.7" />
           <circle cx="25" cy="15" r="0.5" fill="#87ceeb" opacity="0.7" />
           <circle cx="55" cy="75" r="0.7" fill="#87ceeb" opacity="0.7" />
           
-          {/* Искры при клике */}
+          {/* Click sparks */}
           {isClicked && (
             <>
               <ClickSparkle cx="40" cy="20" r="3" fill="#ffd700" $isClicked={isClicked} />

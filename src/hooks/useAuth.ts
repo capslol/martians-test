@@ -8,7 +8,7 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Получить текущего пользователя при инициализации
+    // Get current user on initialization
     const getInitialUser = async () => {
       try {
         const currentUser = await authService.getCurrentUser()
@@ -22,7 +22,7 @@ export const useAuth = () => {
 
     getInitialUser()
 
-    // Слушать изменения состояния аутентификации
+    // Listen for authentication state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_, session) => {
         setUser(session?.user ?? null)
@@ -33,7 +33,7 @@ export const useAuth = () => {
     return () => subscription.unsubscribe()
   }, [])
 
-  // Регистрация нового пользователя
+  // Register new user
   const signUp = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       setLoading(true)
@@ -47,14 +47,14 @@ export const useAuth = () => {
     } catch (error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Ошибка регистрации' 
+        error: error instanceof Error ? error.message : 'Registration error' 
       }
     } finally {
       setLoading(false)
     }
   }
 
-  // Вход в систему
+  // Sign in user
   const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       setLoading(true)
@@ -68,14 +68,14 @@ export const useAuth = () => {
     } catch (error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Ошибка входа' 
+        error: error instanceof Error ? error.message : 'Login error' 
       }
     } finally {
       setLoading(false)
     }
   }
 
-  // Выход из системы
+  // Sign out user
   const signOut = async (): Promise<AuthResponse> => {
     try {
       setLoading(true)
@@ -89,7 +89,7 @@ export const useAuth = () => {
     } catch (error) {
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Ошибка выхода' 
+        error: error instanceof Error ? error.message : 'Sign out error' 
       }
     } finally {
       setLoading(false)
