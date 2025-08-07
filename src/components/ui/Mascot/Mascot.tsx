@@ -10,11 +10,7 @@ const blink = keyframes`
   }
 `;
 
-const dash = keyframes`
-  to {
-    stroke-dashoffset: -20;
-  }
-`;
+
 
 const fly = keyframes`
   0%, 100% {
@@ -31,14 +27,7 @@ const fly = keyframes`
   }
 `;
 
-const float = keyframes`
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-15px) rotate(5deg);
-  }
-`;
+
 
 const sparkle = keyframes`
   0%, 100% {
